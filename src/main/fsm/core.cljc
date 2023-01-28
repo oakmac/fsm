@@ -91,13 +91,13 @@
 
 
 (defn guards-for-transition
-  "Return all guards for given transition"
+  "Returns all guards for a given transition"
   [fsm transition]
   (transition-elements fsm transition :guards))
 
 
 (defn fx-for-transition
-  "Return all guards for given transition"
+  "Returns all effects for a given transition"
   [fsm transition]
   (transition-elements fsm transition :fx))
 
@@ -135,7 +135,7 @@
    signal.
 
    Two arguments version checks quards using the default guard function.
-   It accepts guards that are wither a vector, or a function. See the
+   It accepts guards that are either a vector, or a function. See the
    documentation TODO for more information.
 
    Three arg version allows specifying the `allow?` function.
