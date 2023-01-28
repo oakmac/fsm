@@ -102,8 +102,8 @@
   (transition-elements fsm transition :fx))
 
 
-(defn get-transitions 
-  "Returns a seq of possible transitions with provided signal. Each 
+(defn get-transitions
+  "Returns a seq of possible transitions with provided signal. Each
    element in the seq has following elements:
      `:transition` The transition from the fsm that is possible
      `:guards`     A seq of guards for this transition
@@ -124,24 +124,24 @@
 
 
 ;;
-;; Above pure stateless stuff, below more and more non-pureness starts to 
+;; Above pure stateless stuff, below more and more non-pureness starts to
 ;; show
 ;;
 
 
-(defn get-transition 
+(defn get-transition
   "Find first transition for given signal that is permitted by all
    applicable guards, or `nil` if no transition is available for given
-   signal. 
-   
+   signal.
+
    Two arguments version checks quards using the default guard function.
    It accepts guards that are wither a vector, or a function. See the
    documentation TODO for more information.
-   
-   Three arg version allows specifying the `allow?` function. 
-   It must accept two arguments, first is the fsm and the second is the 
-   guard data from the fsm. The signal is available in the fsm at 
-   `:signal`. The `guard-allow?` must return truthy if the guard data 
+
+   Three arg version allows specifying the `allow?` function.
+   It must accept two arguments, first is the fsm and the second is the
+   guard data from the fsm. The signal is available in the fsm at
+   `:signal`. The `guard-allow?` must return truthy if the guard data
    allows transition."
   ([fsm signal] (get-transition default-allow? fsm signal))
   ([allow? fsm signal]
@@ -174,23 +174,23 @@
 (defn apply-signal
   "Apply given signal to fsm, executes fx effects and returns possibly updated fsm."
   ([fsm signal] (apply-signal default-opts fsm signal))
-  ([{:as opts :keys [allow? handle-fx]} fsm signal] 
-   (let [transition-info (get-transition! allow? fsm signal) 
-         prev-states     (-> fsm :state (coerce-seq)) 
+  ([{:as opts :keys [allow? handle-fx]} fsm signal]
+   (let [transition-info (get-transition! allow? fsm signal)
+         prev-states     (-> fsm :state (coerce-seq))
          next-states     (let [to (-> transition-info :transition :to (coerce-seq))]
                            (cond
                              (nil? to) prev-states
                              (= (first to) ::pop) (concat (pop-state! prev-states)
                                                           (next to))
-                             :else (concat to (next prev-states)))) 
-         prev-state      (first prev-states) 
-         next-state      (first next-states) 
+                             :else (concat to (next prev-states))))
+         prev-state      (first prev-states)
+         next-state      (first next-states)
          _               (when-not (contains? (-> fsm :states) next-state)
                            (throw (ex-info (sprintf "fsm: error: transitioning to unknown state: %s" next-state)
                                            {:fsm        fsm
                                             :signal     signal
                                             :state      prev-state
-                                            :next-state next-state}))) 
+                                            :next-state next-state})))
          fxs             (-> transition-info :fx)
          fsm'            (-> (reduce handle-fx
                                      (assoc fsm
@@ -200,7 +200,7 @@
                                             :next-state next-state)
                                      fxs)
                              (assoc :state next-states)
-                             (dissoc :signal :prev-state :next-state))] 
+                             (dissoc :signal :prev-state :next-state))]
      (if-let [pushback (seq (::pushback fsm'))]
          (recur opts
                 (assoc fsm' ::pushback (next pushback))
